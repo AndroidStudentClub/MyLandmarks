@@ -38,17 +38,17 @@ class FirstFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
+
         val view = inflater.inflate(R.layout.fragment_first, container, false)
 
-        // Setup the listener for take photo button
+        // 1.Настроим действие для кнопки
         view.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
             takePhoto()
         }
 
-        // Request camera permissions
+        // 2.Здесь будет запрос разрешений
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -72,16 +72,19 @@ class FirstFragment : Fragment() {
         findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
     }
 
+    // Метод-заглушка для старта камеры
     private fun startCamera() {
         // TODO
     }
 
+    // Метод-заглушка для фото
     private fun takePhoto() {
         // TODO
     }
 
     private fun allPermissionsGranted() = false
 
+    // Метод для получения директории
     private fun getOutputDirectory(): File {
         val mediaDir = context?.externalMediaDirs?.firstOrNull()?.let {
             File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
