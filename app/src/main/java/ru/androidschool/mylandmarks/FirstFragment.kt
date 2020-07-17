@@ -2,21 +2,21 @@ package ru.androidschool.mylandmarks
 
 import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.camera.core.Camera
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.fragment_first.*
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -30,6 +30,7 @@ class FirstFragment : Fragment() {
     private var imageCapture: ImageCapture? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
+    private lateinit var rootView: View
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
@@ -39,12 +40,10 @@ class FirstFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        val view = inflater.inflate(R.layout.fragment_first, container, false)
+        rootView = inflater.inflate(R.layout.fragment_first, container, false)
 
         // 1.Настроим действие для кнопки
-        view.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+        rootView.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
             takePhoto()
         }
 
@@ -53,7 +52,9 @@ class FirstFragment : Fragment() {
             startCamera()
         } else {
             ActivityCompat.requestPermissions(
-                (activity as Activity), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+                (activity as Activity),
+                REQUIRED_PERMISSIONS,
+                REQUEST_CODE_PERMISSIONS
             )
         }
 
@@ -61,7 +62,24 @@ class FirstFragment : Fragment() {
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        return view
+        return rootView
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults:
+        IntArray
+    ) {
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                Snackbar.make(
+                    rootView,
+                    "Разрешения для камеры отсутствуют :(",
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -74,15 +92,17 @@ class FirstFragment : Fragment() {
 
     // Метод-заглушка для старта камеры
     private fun startCamera() {
-        // TODO
+        Snackbar.make(rootView, "Заглушка для превью камеры.", Snackbar.LENGTH_SHORT).show()
     }
 
     // Метод-заглушка для фото
     private fun takePhoto() {
-        // TODO
+        Snackbar.make(rootView, "Заглушка для фото.", Snackbar.LENGTH_SHORT).show()
     }
 
-    private fun allPermissionsGranted() = false
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
+    }
 
     // Метод для получения директории
     private fun getOutputDirectory(): File {
