@@ -2,6 +2,7 @@ package ru.androidschool.mylandmarks
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -18,7 +19,10 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.ml.vision.FirebaseVision
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -159,10 +163,46 @@ class FirstFragment : Fragment() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = Uri.fromFile(photoFile)
                     val msg = "Фото успешно сохранено: $savedUri"
-                    Snackbar.make(rootView, msg, Snackbar.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
+
+                    // Создаём FirebaseVisionImage
+                    val image = getFirebaseVisionImage(rootView.context, savedUri)
+                    // Пробуем распознать изображение
+                    image?.let { detectImage(it) }
                 }
             })
+    }
+
+    private fun detectImage(image: FirebaseVisionImage) {
+
+        val detector = FirebaseVision.getInstance()
+            .visionCloudLandmarkDetector
+
+        detector.detectInImage(image)
+            .addOnSuccessListener {
+                // Task succeeded!
+                for (landmark in it) {
+                    // Do something with landmark
+                    Snackbar.make(rootView, landmark.landmark, Snackbar.LENGTH_SHORT).show()
+                    Log.d(TAG, landmark.toString())
+                }
+            }
+            .addOnFailureListener {
+                // Task failed with an exception
+                Snackbar.make(rootView, it.toString(), Snackbar.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun getFirebaseVisionImage(context: Context, uri: Uri): FirebaseVisionImage? {
+
+        var image: FirebaseVisionImage? = null
+        try {
+            image = FirebaseVisionImage.fromFilePath(context, uri);
+        } catch (e: IOException) {
+            e.printStackTrace();
+        }
+
+        return image
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
