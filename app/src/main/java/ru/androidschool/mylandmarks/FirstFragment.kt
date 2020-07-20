@@ -43,6 +43,7 @@ class FirstFragment : Fragment() {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -95,8 +96,10 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
     }
 
-    fun openDetails() {
-        findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+    fun openDetails(query: String) {
+        val bundle = Bundle()
+        bundle.putString("landmark", query)
+        findNavController().navigate(R.id.SecondFragment, bundle)
     }
 
     private fun startCamera() {
@@ -185,6 +188,8 @@ class FirstFragment : Fragment() {
                     // Do something with landmark
                     Snackbar.make(rootView, landmark.landmark, Snackbar.LENGTH_SHORT).show()
                     Log.d(TAG, landmark.toString())
+                    // Открываем второй экран для получения доп информации
+                    openDetails(landmark.landmark)
                 }
             }
             .addOnFailureListener {
